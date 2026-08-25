@@ -1,3 +1,4 @@
+<div [class.dark-mode]="darkMode">
 <h1>
     {{title}}
 </h1>
@@ -8,6 +9,13 @@ type="text"
 #taskInput 
 (input)="onInput(taskInput.value)"
 (keyup.enter)="addTask()"
+>
+
+<input
+[value]="searchText"
+type="text"
+#searchInput
+(input)="onSearch(searchInput.value)"
 >
 
 <button (click)="addTask()">Agregar</button>
@@ -44,12 +52,12 @@ type="text"
 </button>
 
 <ul>
-    @for(task of tasks; track task){
+    @for(task of getFilteredTasks(); track task){
         <li [class.completed]="task.completed">
             <input  
                     type="checkbox" 
                     [checked]="task.completed"
-                    (click)="toggleTask($index)">
+                    (click)="toggleTask(task)">
                     @if (editingIndex == $index)
                     {
                         <input
@@ -65,10 +73,26 @@ type="text"
             Editar
         </button>
 
-        <button (click)="deleteTask($index)">
+        <button (click)="deleteTask(task)">
             Eliminar
         </button>
         </li> 
+    }
+
+    <button (click)="toggleDarkMode()">
+        Dark Mode
+    </button>
+    <p>{{darkMode}}</p>
+</ul>
+
+<h2>Tareas API</h2>
+
+<ul>
+    @for(todo of apiTasks.slice(0,10); track todo.id){
+        <li>
+            {{todo.title}}
+        </li>
 
     }
 </ul>
+</div>
