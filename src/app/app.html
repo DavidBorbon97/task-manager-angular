@@ -73,9 +73,6 @@ type="text"
             Editar
         </button>
 
-        <button (click)="deleteTask(task)">
-            Eliminar
-        </button>
         </li> 
     }
 
@@ -88,11 +85,18 @@ type="text"
 <h2>Tareas API</h2>
 
 <ul>
-    @for(todo of apiTasks.slice(0,10); track todo.id){
+    @for(todo of apiTasks; track todo.id){
         <li>
             {{todo.title}}
+        <button (click)="deleteApiTask(todo.id)">
+          Eliminar
+        </button>
         </li>
-
     }
 </ul>
+
+<h2>Tarea creada</h2>
+    <ul>
+
+    </ul>
 </div>

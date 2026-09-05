@@ -35,23 +35,31 @@
     }
 
     ngOnInit(){
-      /**
+    /**
       const newTodo: CreateTodo = {
-      userId: 1,
-      title: "Aprender POST",
-      completed: false
-    }
-    this.taskService.getApiTasks().subscribe(data =>{
-      this.apiTasks = data
-    })
+        userId: 1,
+        title: "Aprender POST",
+        completed: false
+        }
     this.taskService.createApiTask(newTodo).subscribe(data =>{
-     
+      
     })
-     */
+    ------------------prueba delete/PUT
+    const todo = this.apiTasks[0]
+ 
+    this.taskService.deleteApiTask(todo.id).subscribe(data =>{
+      console.log(data)
+   })
+    */
+   this.tasks = this.taskService.getTasks()
 
-    this.tasks = this.taskService.getTasks()
+   this.taskService.getApiTasks().subscribe(data =>{
+     this.apiTasks = data
+    })
+   
     this.darkMode = this.taskService.getDarkMode()
-    }
+  }
+
 
 
     hasTasks(){
@@ -71,9 +79,18 @@
         text: this.taskText,
         completed: false
       })
+
+      const todo: CreateTodo = {
+        userId: 1,
+        title: this.taskText,
+        completed: false
+      }
+      this.taskService.createApiTask(todo).subscribe(data =>{
+        this.apiTasks.push (data)
+      })
       this.taskText = ""
       this.taskService.saveTasks(this.tasks)
-
+      console.log(todo)
     }
 
     deleteTask(task: Task){
@@ -143,6 +160,28 @@
       filteredTasks = filteredTasks.filter(t => t.text.toLowerCase().includes(this.searchText.toLowerCase()))
 
       return filteredTasks
+    }
+
+    getFilteredApiTasks(){
+      let FilteredTasks = this.apiTasks
+      
+    }
+
+    deleteApiTask(id: number){
+      this.taskService.deleteApiTask(id).subscribe(data =>{
+        console.log(data)
+        const index = this.apiTasks.findIndex(todo => todo.id === id)
+
+        console.log("ID:", id)
+        console.log("INDEX:", index)
+
+        if (index != -1) {
+          this.apiTasks.splice(index,1)
+        }
+
+        console.log(this.apiTasks)
+
+      })
     }
 
     onSearch(value: string){

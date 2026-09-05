@@ -29,7 +29,6 @@ export class TaskService{
     saveTasks(tasks: Task[]){
         localStorage.setItem(`taskManager`,JSON.stringify(tasks))
     }
-    
 
     getApiTasks(){
         return this.httpClient.get<ApiTodo[]>('https://jsonplaceholder.typicode.com/todos')
@@ -37,6 +36,14 @@ export class TaskService{
     
     createApiTask(todo: CreateTodo){
         return this.httpClient.post<ApiTodo>('https://jsonplaceholder.typicode.com/todos', todo)
+    }
+
+    updateApiTask(todo: ApiTodo){
+        return this.httpClient.put<ApiTodo>(`https://jsonplaceholder.typicode.com/todos/${todo.id}`,todo)
+    }
+
+    deleteApiTask(id: number){
+        return this.httpClient.delete<ApiTodo>(`https://jsonplaceholder.typicode.com/todos/${id}`)
     }
 
     getDarkMode(){
@@ -49,6 +56,7 @@ export class TaskService{
     saveDarkMode(darkMode: boolean){
         localStorage.setItem(`taskDarkMode`,JSON.stringify(darkMode)) 
     }
+
     
     
 }
