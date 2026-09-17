@@ -3,6 +3,7 @@
   import { TaskService } from './services/task';
   import { ApiTodo } from './models/api-todo';
   import {CreateTodo} from './models/create-todo'
+  import { ChangeDetectorRef } from '@angular/core';
 
     type Task = {
     text: string;
@@ -20,8 +21,6 @@
 
   export class App implements OnInit {
     title = "Task Manager Angular"
-
-    tasks: Task[] = []
     apiTasks: ApiTodo[] = []
     taskText = ""
     searchText = ""
@@ -30,40 +29,25 @@
     currentFilter = "all"
     darkMode = false
     
-    constructor(private taskService: TaskService){
+    constructor(private taskService: TaskService,
+      private cdr: ChangeDetectorRef
+    ){
 
     }
 
     ngOnInit(){
-    /**
-      const newTodo: CreateTodo = {
-        userId: 1,
-        title: "Aprender POST",
-        completed: false
-        }
-    this.taskService.createApiTask(newTodo).subscribe(data =>{
-      
-    })
-    ------------------prueba delete/PUT
-    const todo = this.apiTasks[0]
- 
-    this.taskService.deleteApiTask(todo.id).subscribe(data =>{
-      console.log(data)
-   })
-    */
-   this.tasks = this.taskService.getTasks()
-
    this.taskService.getApiTasks().subscribe(data =>{
+    console.log("API RECIBIDA:", data.length)
      this.apiTasks = data
+     this.cdr.detectChanges()
+     console.log("apiTasks:", this.apiTasks.length)
     })
    
     this.darkMode = this.taskService.getDarkMode()
   }
 
-
-
     hasTasks(){
-      return this.tasks.length > 0
+      return this.apiTasks.length > 0
     }
 
     onInput(texto: string){
@@ -75,67 +59,65 @@
         return
       }
       
-      this.tasks.push({
-        text: this.taskText,
-        completed: false
-      })
-
       const todo: CreateTodo = {
         userId: 1,
         title: this.taskText,
         completed: false
       }
       this.taskService.createApiTask(todo).subscribe(data =>{
-        this.apiTasks.push (data)
+        this.apiTasks.unshift (data)
+        console.log(this.apiTasks.length)
+        console.log(this.apiTasks[this.apiTasks.length -1])
       })
       this.taskText = ""
-      this.taskService.saveTasks(this.tasks)
       console.log(todo)
     }
-
-    deleteTask(task: Task){
-      const index = this.tasks.findIndex(t => t === task)
-      this.tasks.splice(index, 1)
-      this.taskService.saveTasks(this.tasks)
+    
+    toggleTask(todo : ApiTodo){
+      const index = this.apiTasks.findIndex(t => t.id === todo.id)
+      this.apiTasks[index].completed = !this.apiTasks[index].completed
+      console.log(todo)
+      this.taskService.updateApiTask(todo).subscribe(data =>{
+        console.log("INDEX:",data)
+      })
     }
-
-    getTaskCount(){
-      return this.tasks.length
-    }
-
-    toggleTask(task : Task){
-       const index = this.tasks.findIndex(t => t === task)
-      this.tasks[index].completed = !this.tasks[index].completed
-      this.taskService.saveTasks(this.tasks)
-    }
-
+    
     toggleDarkMode(){
       this.darkMode = !this.darkMode
       this.taskService.saveDarkMode(this.darkMode)
+    } 
+    
+    getTaskCount(){
+      return this.apiTasks.length
     }
 
     getCompletedTasksCount(){
-      return this.tasks.filter(task => task.completed).length
+      return this.apiTasks.filter(task => task.completed).length
     }
 
+    
     getPendingTasksCount(){
       return this.getTaskCount() - this.getCompletedTasksCount()
     }
-
+    
     clearCompletedTasks(){
-      this.tasks = this.tasks.filter(t => t.completed != true)
-      this.taskService.saveTasks(this.tasks)
+      const completedTasks = this.apiTasks.filter(t => t.completed)
+      console.log("Completadas:", completedTasks.length)
+      completedTasks.forEach(todo =>{
+        this.deleteApiTask(todo.id)
+      })
     }
 
     editTask(index : number){
       this.editingIndex = index
-      this.editingText = this.tasks[index].text
-
+      this.editingText = this.apiTasks[index].title
     }
 
     saveEdit(){
-      this.tasks[this.editingIndex].text = this.editingText
-      this.taskService.saveTasks(this.tasks)
+      this.apiTasks[this.editingIndex].title = this.editingText
+      this.taskService.updateApiTask(this.apiTasks[this.editingIndex]).subscribe(data =>{
+        console.log(data)
+      })
       this.editingIndex = -1
     }
 
@@ -143,28 +125,28 @@
       this.currentFilter = filter
     }
 
-    getFilteredTasks(){
-      let filteredTasks = this.tasks
-
-      if(this.currentFilter === 'all'){
-        filteredTasks = this.tasks
-      }
-
-      if(this.currentFilter === 'active'){
-        filteredTasks = this.tasks.filter(t => !t.completed)
-      }
-
-      if(this.currentFilter === 'completed'){
-        filteredTasks = this.tasks.filter(t => t.completed)
-      }
-      filteredTasks = filteredTasks.filter(t => t.text.toLowerCase().includes(this.searchText.toLowerCase()))
-
-      return filteredTasks
-    }
 
     getFilteredApiTasks(){
-      let FilteredTasks = this.apiTasks
-      
+      let filteredApiTasks = this.apiTasks
+
+      if(this.currentFilter === 'all')
+        {
+          filteredApiTasks = this.apiTasks
+        }
+
+      if(this.currentFilter === 'active')
+        {
+          filteredApiTasks = this.apiTasks.filter(t => !t.completed)
+        }
+
+        if(this.currentFilter === 'completed')
+        {
+          filteredApiTasks = this.apiTasks.filter(t => t.completed)
+        }
+
+      filteredApiTasks = filteredApiTasks.filter(t => t.title.toLowerCase().includes(this.searchText.toLowerCase()))
+
+        return filteredApiTasks
     }
 
     deleteApiTask(id: number){
@@ -172,12 +154,11 @@
         console.log(data)
         const index = this.apiTasks.findIndex(todo => todo.id === id)
 
-        console.log("ID:", id)
-        console.log("INDEX:", index)
-
         if (index != -1) {
           this.apiTasks.splice(index,1)
         }
+          this.cdr.detectChanges()
+          console.log("Después de eliminar:", this.apiTasks.find(todo => todo.id === id))
 
         console.log(this.apiTasks)
 

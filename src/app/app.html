@@ -52,30 +52,6 @@ type="text"
 </button>
 
 <ul>
-    @for(task of getFilteredTasks(); track task){
-        <li [class.completed]="task.completed">
-            <input  
-                    type="checkbox" 
-                    [checked]="task.completed"
-                    (click)="toggleTask(task)">
-                    @if (editingIndex == $index)
-                    {
-                        <input
-                        type = "text"
-                        [(ngModel)] = "editingText"
-                        (keyup.enter)="saveEdit()"
-                        >
-                    }@else{
-                        {{task.text}}
-                    }
-
-        <button (click)="editTask($index)">
-            Editar
-        </button>
-
-        </li> 
-    }
-
     <button (click)="toggleDarkMode()">
         Dark Mode
     </button>
@@ -85,12 +61,32 @@ type="text"
 <h2>Tareas API</h2>
 
 <ul>
-    @for(todo of apiTasks; track todo.id){
-        <li>
-            {{todo.title}}
-        <button (click)="deleteApiTask(todo.id)">
-          Eliminar
-        </button>
+    @for(todo of getFilteredApiTasks(); track todo.id){
+        <li [class.completed]="todo.completed">
+
+            <input  
+                type="checkbox" 
+                [checked]="todo.completed"
+                (click)="toggleTask(todo)">
+
+            @if (editingIndex == $index)
+                {
+                    <input
+                    type = "text"
+                    [(ngModel)] = "editingText"
+                    (keyup.enter)="saveEdit()"
+                    >
+                    }@else{
+                        {{todo.title}}
+                    }
+
+            <button (click)="editTask($index)">
+                Editar
+            </button>
+
+            <button (click)="deleteApiTask(todo.id)">
+                Eliminar
+            </button>
         </li>
     }
 </ul>
